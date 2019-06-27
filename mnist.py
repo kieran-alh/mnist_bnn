@@ -1,8 +1,3 @@
-DATA_SIZE = 60000
-ROWS = 28
-COLS = 28
-
-
 def read_images(file_name):
     """
     Read Image binary file of MNIST dataset
@@ -22,6 +17,16 @@ def read_images(file_name):
     file.close()
     print('Images Complete')
     return images
+
+
+def normalize_images(images):
+    print('Normalizing')
+    normalized = []
+    for image in images:
+        normalized.append(
+            list(map(lambda x: x * (0.99 / 255.0) + 0.01, image)))
+    print('Normalizing Complete')
+    return normalized
 
 
 def read_labels(file_name):
