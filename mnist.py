@@ -2,7 +2,7 @@ def read_images(file_name):
     """
     Read Image binary file of MNIST dataset
     :param file_name: Path to images file
-    :returns: List of 2D image lists (matrices)
+    :returns: List of image lists
     """
     print('Reading Images')
     file = open(file_name, 'rb')
@@ -20,6 +20,11 @@ def read_images(file_name):
 
 
 def normalize_images(images):
+    """
+    Normalize image pixel value between [0.01, 1.0)
+    :param file_name: List of raww image lists
+    :returns: List of 2D image lists (normalized)
+    """
     print('Normalizing')
     normalized = []
     for image in images:
@@ -47,10 +52,10 @@ def read_labels(file_name):
     return labels
 
 
-def print_image(image_matrix):
-    for row in image_matrix:
-        for col in row:
-            if col > 1:
+def print_image(image, row, col):
+    for i in range(row):
+        for j in range(col):
+            if image[(i*row) + j] > 0.01:
                 print("*", end='')
             else:
                 print(" ", end='')
