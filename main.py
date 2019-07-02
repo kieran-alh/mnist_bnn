@@ -15,23 +15,13 @@ def train_network():
     images = normalize_images_255(read_images(TRAIN_IMAGE_FILE))
     labels = read_labels(TRAIN_LABEL_FILE)
     network = Network([784, 16, 16, 10])
-    # TODO
-    # TODO CHANGE BACK TO ORIGINAL TRAINING
-    # TODO
-    train(network, images[:1000], labels[:1000], 0.5, 1)
+    train(network, images, labels, 0.5, 20)
     training_values = []
-    count = 10
-    for i in range(len(images[:1000])):
+    for i in range(len(images)):
         classify_outputs = classify_network(network, images[i])
-        if count >= 0:
-            print('TR')
-            print(classify_outputs)
-            count -= 1
         output_value = single_network_output(classify_outputs)
         training_values.append(output_value)
-    print('training_values')
-    print(training_values[:100])
-    accuracy = calculate_network_accuracy(training_values, labels[:1000])
+    accuracy = calculate_network_accuracy(training_values, labels)
     print('TRAIN_COMPLETE')
     print('Accuracy')
     print(accuracy)
@@ -62,6 +52,7 @@ def save_network_to_disk(network):
 def run_neural_network():
     network = train_network()
     # test_network(network)
+
     # save = input('Save Network to Disk (y/n) ')
     # if save.lower() == 'y':
     #     save_network_to_disk(network)

@@ -1,4 +1,4 @@
-from math import exp
+from math import exp, sinh, cosh
 
 
 def sigmoid(activation):
@@ -10,10 +10,22 @@ def sigmoid_derivate(output):
 
 
 def tanhx(activation):
-    num = exp(activation) - exp(-activation)
-    den = exp(activation) + exp(-activation)
-    return num / den
+    return sinh(activation) / cosh(activation)
 
 
 def tanh_derivate(output):
     return 1 - (output**2)
+
+
+def lrelu(z, a=0.01):
+    if z > 0:
+        return z
+    elif z <= 0:
+        return z * a
+
+
+def lrelu_derivate(z, a=0.01):
+    if z > 0:
+        return 1
+    elif z <= 0:
+        return a
