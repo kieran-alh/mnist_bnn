@@ -22,7 +22,7 @@ def read_images(file_name):
 def normalize_images(images):
     """
     Normalize image pixel value between [0.01, 1.0)
-    :param file_name: List of raww image lists
+    :param file_name: List of raw image lists
     :returns: List of 2D image lists (normalized)
     """
     print('Normalizing')
@@ -30,6 +30,21 @@ def normalize_images(images):
     for image in images:
         normalized.append(
             list(map(lambda x: x * (0.99 / 255.0) + 0.01, image)))
+    print('Normalizing Complete')
+    return normalized
+
+
+def normalize_images_255(images):
+    """
+    Normalize image pixel value between [0.0, 1.0)
+    :param file_name: List of raw image lists
+    :returns: List of 2D image lists (normalized)
+    """
+    print('Normalizing')
+    normalized = []
+    for image in images:
+        normalized.append(
+            list(map(lambda x: x / 255.0, image)))
     print('Normalizing Complete')
     return normalized
 
