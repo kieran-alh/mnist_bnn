@@ -12,7 +12,6 @@ class Neuron:
         self.weights = [gauss(0, 1) for i in range(prev_layer_length)]
         self.output = 0.0
         self.delta = 0.0
-        # TODO CHANGE BIAS?
         self.bias = gauss(0, 1)
 
     def __str__(self):
@@ -43,7 +42,7 @@ def activate(weights, inputs, bias):
 
 def activation(value, func='tanh'):
     if func == 'tanh':
-        return tanhx(value)
+        return tanh(value)
     elif func == 'lrelu':
         return lrelu(value)
     else:
@@ -69,7 +68,7 @@ def forward_propagate(network, initial_inputs, read_only=False):
             # Activate each neuron in the layer with the current inputs
             output = activate(neuron.weights, inputs, neuron.bias)
             # Run activation output through step function
-            neuron_output = activation(output, func='sig')
+            neuron_output = activation(output, func='tanh')
             if not read_only:
                 # Assign output to neuron
                 neuron.output = neuron_output
@@ -87,25 +86,24 @@ def backward_propagate(network, expected):
     for l in reversed(range(len(network.layers))):
         layer = network.layers[l]
         errors = []
-        if l == len(network.layers) - 1:
-            # If the current layer is the output layer
-            # Compute the error by expected - output
-            for i in range(len(layer.neurons)):
+        # For all the neurons in the current layer
+        for i in range(len(layer.neurons)):
+            if l == len(network.layers) - 1:
+                # If the current layer is the output layer
+                # Error is just expected - output
                 errors.append(expected[i] - layer.neurons[i].output)
-        else:
-            # If the current layer is not the output layer
-            # Compute the error
-            for i in range(len(layer.neurons)):
-                # For the neurons in the current layer
-                # Compute error by summing the weight * delta of the neurons in the next layer
+            else:
+                # For all other layers
+                # The neuron's error is the sum of all the weights * deltas that are connected
+                # To the current neuron in the next layer
                 error = 0.0
-                for neuron in network.layers[l + 1].neurons:
+                for neuron in network.layers[l+1].neurons:
                     error += neuron.weights[i] * neuron.delta
                 errors.append(error)
         for i in range(len(layer.neurons)):
-            # Compute the delta of the neuron by multiplying the erro by the output derivate
+            # Compute the delta of the neuron by multiplying the error by the output derivate
             layer.neurons[i].delta = errors[i] * \
-                derivate(layer.neurons[i].output, func='sig')
+                derivate(layer.neurons[i].output, func='tanh')
 
 
 def update_weights(network, initial_inputs, learn_rate):
@@ -154,7 +152,7 @@ def train(network, train_data, train_labels, learn_rate, epochs):
                 n = randrange(0, len(network.layers[l].neurons))
                 print_neuron(network, l, n)
             # Set the expected list to 0s using the length of the last layer
-            expected = [0]*len(network.layers[-1].neurons)
+            expected = [0.0]*len(network.layers[-1].neurons)
             # Set expected labels index to 1
             expected[train_labels[i]] = 1.0
             sum_error += sum_square_errors(expected, outputs)
@@ -183,4 +181,4 @@ def calculate_network_accuracy(output, expected):
             value += 1
     print('Amount Correct %d' % value)
     print('Amount Attempted %d' % len(output))
-    return (value / len(output))
+    return value / len(output)

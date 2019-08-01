@@ -1,4 +1,4 @@
-from mnist import read_images, read_labels, normalize_images_255
+from mnist import read_images, read_labels, normalize_images_255, print_image
 from network import Network, train, classify_network, single_network_output, calculate_network_accuracy
 import os
 import pickle
@@ -34,8 +34,8 @@ def test_network(network):
     labels = read_labels(TEST_LABEL_FILE)
     training_values = []
     for i in range(len(images)):
-        output_value = single_network_output(
-            classify_network(network, images[i]))
+        classify_outputs = classify_network(network, images[i])
+        output_value = single_network_output(classify_outputs)
         training_values.append(output_value)
     accuracy = calculate_network_accuracy(training_values, labels)
     print('TEST_COMPLETE')
@@ -51,11 +51,12 @@ def save_network_to_disk(network):
 
 def run_neural_network():
     network = train_network()
-    # test_network(network)
+    test_network(network)
 
     # save = input('Save Network to Disk (y/n) ')
     # if save.lower() == 'y':
     #     save_network_to_disk(network)
+
 
 
 if __name__ == "__main__":
