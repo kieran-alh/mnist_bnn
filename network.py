@@ -1,6 +1,8 @@
-from random import random, randrange, gauss
+from random import random, randrange, gauss, seed
 from math import tanh
-from activations import sigmoid, sigmoid_derivate, tanh_derivate
+from activations import sigmoid, sigmoid_derivative, tanhx, tanh_derivative, lrelu, lrelu_derivative
+
+seed(1)
 
 
 class Neuron:
@@ -10,8 +12,10 @@ class Neuron:
         self.weights = [gauss(0, 1) for i in range(prev_layer_length)]
         self.output = 0.0
         self.delta = 0.0
-        # TODO CHANGE BIAS?
         self.bias = gauss(0, 1)
+
+    def __str__(self):
+        return 'O:{0}\nD:{1}\nB:{2}\nW:{3}'.format(self.output, self.delta, self.bias, self.weights)
 
 
 class Layer:
@@ -39,15 +43,19 @@ def activate(weights, inputs, bias):
 def activation(value, func='tanh'):
     if func == 'tanh':
         return tanh(value)
+    elif func == 'lrelu':
+        return lrelu(value)
     else:
         return sigmoid(value)
 
 
-def derivate(output, func='tanh'):
+def derivative(output, func='tanh'):
     if func == 'tanh':
-        return tanh_derivate(output)
+        return tanh_derivative(output)
+    elif func == 'lrelu':
+        return lrelu_derivative(output)
     else:
-        return sigmoid_derivate(output)
+        return sigmoid_derivative(output)
 
 
 def forward_propagate(network, initial_inputs, read_only=False):
@@ -60,7 +68,7 @@ def forward_propagate(network, initial_inputs, read_only=False):
             # Activate each neuron in the layer with the current inputs
             output = activate(neuron.weights, inputs, neuron.bias)
             # Run activation output through step function
-            neuron_output = activation(output)
+            neuron_output = activation(output, func='sigmoid')
             if not read_only:
                 # Assign output to neuron
                 neuron.output = neuron_output
@@ -78,25 +86,23 @@ def backward_propagate(network, expected):
     for l in reversed(range(len(network.layers))):
         layer = network.layers[l]
         errors = []
-        if l == len(network.layers) - 1:
-            # If the current layer is the output layer
-            # Compute the error by expected - output
-            for i in range(len(layer.neurons)):
+        # For all the neurons in the current layer
+        for i in range(len(layer.neurons)):
+            if l == len(network.layers) - 1:
+                # If the current layer is the output layer
+                # Error is just expected - output
                 errors.append(expected[i] - layer.neurons[i].output)
-        else:
-            # If the current layer is not the output layer
-            # Compute the error
-            for i in range(len(layer.neurons)):
-                # For the neurons in the current layer
-                # Compute error by summing the weight * delta of the neurons in the next layer
+            else:
+                # For all other layers
+                # The neuron's error is the sum of all the weights * deltas that are connected
+                # To the current neuron in the next layer
                 error = 0.0
-                for neuron in network.layers[l + 1].neurons:
+                for neuron in network.layers[l+1].neurons:
                     error += neuron.weights[i] * neuron.delta
                 errors.append(error)
         for i in range(len(layer.neurons)):
-            # Compute the delta of the neuron by multiplying the erro by the output derivate
-            layer.neurons[i].delta = errors[i] * \
-                derivate(layer.neurons[i].output)
+            # Compute the delta of the neuron by multiplying the error by the output derivative
+            layer.neurons[i].delta = errors[i] * derivative(layer.neurons[i].output, func='sigmoid')
 
 
 def update_weights(network, initial_inputs, learn_rate):
@@ -113,8 +119,12 @@ def update_weights(network, initial_inputs, learn_rate):
             for k in range(len(inputs)):
                 # Update the weights of the neurons in the current layer
                 # With the product of the learning_rate, current neurons delta, and connecting input
-                network.layers[i].neurons[j].weights[k] += learn_rate * \
+                weight_delta = learn_rate * \
                     network.layers[i].neurons[j].delta * inputs[k]
+                network.layers[i].neurons[j].weights[k] += weight_delta
+            # Update the neurons bias
+            network.layers[i].neurons[j].bias += learn_rate * \
+                network.layers[i].neurons[j].delta
 
 
 def sum_square_errors(expected, output):
@@ -124,15 +134,20 @@ def sum_square_errors(expected, output):
     return result
 
 
+def print_neuron(network, l, n):
+    print('LAYER %d' % l)
+    print('NEURON %d' % n)
+    print(max(network.layers[l].neurons[n].weights))
+    print(network.layers[l].neurons[n])
+
+
 def train(network, train_data, train_labels, learn_rate, epochs):
     for epoch in range(epochs):
         sum_error = 0
         for i in range(len(train_data)):
-            if i > 0 and i % 10000 == 0:
-                print('TRAIN_DATA_#%d' % i)
             outputs = forward_propagate(network, train_data[i])
             # Set the expected list to 0s using the length of the last layer
-            expected = [0]*len(network.layers[-1].neurons)
+            expected = [0.0]*len(network.layers[-1].neurons)
             # Set expected labels index to 1
             expected[train_labels[i]] = 1.0
             sum_error += sum_square_errors(expected, outputs)
@@ -148,7 +163,7 @@ def classify_network(network, inputs):
 
 def single_network_output(outputs, threshold=0.5):
     value = outputs.index(max(outputs))
-    if value >= threshold:
+    if max(outputs) >= threshold:
         return value
     else:
         return -1
@@ -159,6 +174,6 @@ def calculate_network_accuracy(output, expected):
     for i in range(len(expected)):
         if output[i] == expected[i]:
             value += 1
-    print('Amount Correct' % value)
-    print('Amount Attempted' % len(output))
-    return (value / len(output))
+    print('Amount Correct %d' % value)
+    print('Amount Attempted %d' % len(output))
+    return value / len(output)
