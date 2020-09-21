@@ -1,6 +1,6 @@
 from random import random, randrange, gauss, seed
 from math import tanh
-from activations import sigmoid, sigmoid_derivate, tanhx, tanh_derivate, lrelu, lrelu_derivate
+from activations import sigmoid, sigmoid_derivative, tanhx, tanh_derivative, lrelu, lrelu_derivative
 
 seed(1)
 
@@ -49,13 +49,13 @@ def activation(value, func='tanh'):
         return sigmoid(value)
 
 
-def derivate(output, func='tanh'):
+def derivative(output, func='tanh'):
     if func == 'tanh':
-        return tanh_derivate(output)
+        return tanh_derivative(output)
     elif func == 'lrelu':
-        return lrelu_derivate(output)
+        return lrelu_derivative(output)
     else:
-        return sigmoid_derivate(output)
+        return sigmoid_derivative(output)
 
 
 def forward_propagate(network, initial_inputs, read_only=False):
@@ -68,7 +68,7 @@ def forward_propagate(network, initial_inputs, read_only=False):
             # Activate each neuron in the layer with the current inputs
             output = activate(neuron.weights, inputs, neuron.bias)
             # Run activation output through step function
-            neuron_output = activation(output, func='tanh')
+            neuron_output = activation(output, func='sigmoid')
             if not read_only:
                 # Assign output to neuron
                 neuron.output = neuron_output
@@ -101,9 +101,8 @@ def backward_propagate(network, expected):
                     error += neuron.weights[i] * neuron.delta
                 errors.append(error)
         for i in range(len(layer.neurons)):
-            # Compute the delta of the neuron by multiplying the error by the output derivate
-            layer.neurons[i].delta = errors[i] * \
-                derivate(layer.neurons[i].output, func='tanh')
+            # Compute the delta of the neuron by multiplying the error by the output derivative
+            layer.neurons[i].delta = errors[i] * derivative(layer.neurons[i].output, func='sigmoid')
 
 
 def update_weights(network, initial_inputs, learn_rate):
@@ -147,10 +146,6 @@ def train(network, train_data, train_labels, learn_rate, epochs):
         sum_error = 0
         for i in range(len(train_data)):
             outputs = forward_propagate(network, train_data[i])
-            if i % 10000 == 0:
-                l = randrange(0, 3)
-                n = randrange(0, len(network.layers[l].neurons))
-                print_neuron(network, l, n)
             # Set the expected list to 0s using the length of the last layer
             expected = [0.0]*len(network.layers[-1].neurons)
             # Set expected labels index to 1

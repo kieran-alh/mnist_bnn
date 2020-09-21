@@ -5,9 +5,10 @@ public class Executor {
     }
 
     public static Network trainNetwork() {
-        System.out.println("Beging Testing");
-        String imagePath = "/Users/kieranhaberstock/projects/BNN/data/train-images-idx3-ubyte";
-        String labelPath = "/Users/kieranhaberstock/projects/BNN/data/train-labels-idx1-ubyte";
+        System.out.println("Beging Training");
+        String imagePath = "C:\\projects\\jbnn\\data\\train-images-idx3-ubyte";
+        String labelPath = "C:\\projects\\jbnn\\data\\train-labels-idx1-ubyte";
+
         float[][] images = MNISTTools.normalizeImages255(MNISTTools.readImages(imagePath));
         int[] labels = MNISTTools.readLabels(labelPath);
         Network network = new Network(new int[] { 784, 16, 16, 10 });
@@ -25,8 +26,8 @@ public class Executor {
 
     public static void testNetwork(Network network) {
         System.out.println("Beging Testing");
-        String imagePath = "/Users/kieranhaberstock/projects/BNN/data/t10k-images-idx3-ubyte";
-        String labelPath = "/Users/kieranhaberstock/projects/BNN/data/t10k-labels-idx1-ubyte";
+        String imagePath = "C:\\projects\\jbnn\\data\\t10k-images-idx3-ubyte";
+        String labelPath = "C:\\projects\\jbnn\\data\\t10k-labels-idx1-ubyte";
         float[][] images = MNISTTools.normalizeImages255(MNISTTools.readImages(imagePath));
         int[] labels = MNISTTools.readLabels(labelPath);
         int[] trainingValues = new int[labels.length];

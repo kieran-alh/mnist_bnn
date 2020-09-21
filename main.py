@@ -15,6 +15,7 @@ def train_network():
     images = normalize_images_255(read_images(TRAIN_IMAGE_FILE))
     labels = read_labels(TRAIN_LABEL_FILE)
     network = Network([784, 16, 16, 10])
+    print('TRAINING')
     train(network, images, labels, 0.5, 20)
     training_values = []
     for i in range(len(images)):
@@ -33,6 +34,7 @@ def test_network(network):
     images = normalize_images_255(read_images(TEST_IMAGE_FILE))
     labels = read_labels(TEST_LABEL_FILE)
     training_values = []
+    print('TESTING')
     for i in range(len(images)):
         classify_outputs = classify_network(network, images[i])
         output_value = single_network_output(classify_outputs)

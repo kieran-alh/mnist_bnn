@@ -20,13 +20,13 @@ public class Network {
 
     public float activation(float output, String function) {
         if (function == "tanh") {
-            return (float)Math.tanh(output);
+            return Activations.tanh(output);
         } else {
             return Activations.sigmoid(output);
         }
     }
 
-    public float derivate(float output, String function) {
+    public float derivative(float output, String function) {
         if (function == "tanh") {
             return Activations.dTanh(output);
         } else {
@@ -40,7 +40,7 @@ public class Network {
             float[] newInputs = new float[this.layers[i].neurons.length];
             for (int j = 0; j < this.layers[i].neurons.length; j++) {
                 float output = unactivatedOutput(this.layers[i].neurons[j].weights, inputs, this.layers[i].neurons[j].bias);
-                float activation = activation(output, "tanh");
+                float activation = activation(output, "sigmoid");
                 if (!readOnly) {
                     this.layers[i].neurons[j].output = activation;
                 }
@@ -66,7 +66,7 @@ public class Network {
                 }
             }
             for (int j = 0; j < this.layers[i].neurons.length; j++) {
-                this.layers[i].neurons[j].delta = errors[j] * derivate(this.layers[i].neurons[j].output, "tanh");
+                this.layers[i].neurons[j].delta = errors[j] * derivative(this.layers[i].neurons[j].output, "sigmoid");
             }
         }
     }
@@ -127,7 +127,7 @@ public class Network {
 
     public Network train(float[][] trainData, int[] trainLabels, float learnRate, int epochs) {
         float sumError = 0.0f;
-        for (int i = 0; i < epochs; i++) {
+        for (int e = 0; e < epochs; e++) {
             sumError = 0.0f;
             for (int j = 0; j < trainData.length; j++) {
                 float[] outputs = this.forwardPropagation(trainData[j], false);
@@ -135,9 +135,9 @@ public class Network {
                 expected[trainLabels[j]] = 1.0f;
                 sumError += sumErrors(expected, outputs);
                 this.backwardPropagation(expected);
-                this.updateWeights(trainData[i], learnRate);
+                this.updateWeights(trainData[j], learnRate);
             }
-            System.out.format(">epoch=%d | lrate=%f | error=%f %n", i, learnRate, sumError);
+            System.out.format(">epoch=%d | lrate=%f | error=%f %n", e, learnRate, sumError);
         }
         return this;
     }
